@@ -1,37 +1,255 @@
-import turtle import math
 
-screen = turtle.Screen() screen.bgcolor("black")
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Love You Rinku ❤️</title>
 
-turtle.Turtle()
+<style>
+* { box-sizing: border-box; }
 
-t.speed(1)
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #210b20, #08050c 75%);
+  color: white;
+  font-family: Georgia, serif;
+}
 
-t.hideturtle()
+main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
 
-t.penup()
+h1 {
+  color: #ffd4e7;
+  font-size: clamp(23px, 5vw, 38px);
+  font-weight: normal;
+  letter-spacing: 3px;
+  text-align: center;
+  text-shadow: 0 0 20px #ff4d9d;
+  margin: 0 0 8px;
+}
 
-t.color("#ffb6c1")
+p {
+  color: #d9b8d1;
+  text-align: center;
+  font-size: 15px;
+  margin: 0 0 12px;
+}
 
-for scale in range(11, 17):
+canvas {
+  display: block;
+  width: min(96vw, 650px);
+  height: min(76vh, 650px);
+}
 
-r i in range(120):
+button {
+  margin-top: 8px;
+  padding: 12px 25px;
+  border: 1px solid #ff9bc8;
+  border-radius: 30px;
+  color: white;
+  background: linear-gradient(135deg, #d92775, #76265f);
+  font-size: 14px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 22px #d9277555;
+  cursor: pointer;
+}
 
-angle = i * (math.pi
+button:active { transform: scale(.96); }
 
-2)/ 120
+.signature {
+  color: #bca0bd;
+  font-size: 12px;
+  letter-spacing: 3px;
+  margin-top: 12px;
+}
+</style>
+</head>
 
-16 * (math.sin(angle) ** 3)
+<body>
+<main>
+  <h1>FOR MY RINKU ❤️</h1>
+  <p>Every little word is written for you...</p>
 
-scale
+  <canvas id="heart"></canvas>
 
-(13 * math.cos(angle) - 5 math.cos(2* * angle) - 2 * math.cos(3
+  <button id="replay">♡ PLAY AGAIN ♡</button>
+  <div class="signature">FOREVER YOURS · JAGAN</div>
+</main>
 
-angle) - math.cos(4 * angle)) * scale
+<script>
+const canvas = document.getElementById("heart");
+const ctx = canvas.getContext("2d");
+const replay = document.getElementById("replay");
 
-t.goto(x, y)
+let W, H, points = [], particles = [];
+let progress = 0;
+let finished = false;
+let lastTime = 0;
 
-t.write("I love you rinku",
+const message = "I LOVE YOU RINKU  ♥  ";
+const fontSize = 12;
 
-align="center", font=("Arial", 8, "bold"))
+function heartPoint(t) {
+  return {
+    x: 16 * Math.pow(Math.sin(t), 3),
+    y: -(13 * Math.cos(t) - 5 * Math.cos(2*t)
+      - 2 * Math.cos(3*t) - Math.cos(4*t))
+  };
+}
 
-turtle.done()
+function insideHeart(x, y) {
+  // Standard implicit heart equation
+  const a = x*x + y*y - 1;
+  return a*a*a - x*x*y*y*y <= 0;
+}
+
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  W = rect.width;
+  H = rect.height;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  buildHeart();
+  draw();
+}
+
+function buildHeart() {
+  points = [];
+
+  const scale = Math.min(W / 36, H / 34) * 0.91;
+  const cx = W / 2;
+  const cy = H / 2 + 5;
+
+  // Create horizontal rows of text inside the heart.
+  for (let y = -1.15; y <= 1.35; y += 0.115) {
+    let left = null, right = null;
+
+    for (let x = -1.35; x <= 1.35; x += 0.012) {
+      if (insideHeart(x, y)) {
+        if (left === null) left = x;
+        right = x;
+      }
+    }
+
+    if (left !== null && right !== null) {
+      const startX = cx + left * scale * 16;
+      const endX = cx + right * scale * 16;
+      const yy = cy + y * scale * 16;
+
+      ctx.save();
+      ctx.font = `bold ${fontSize}px Georgia`;
+      const wordWidth = ctx.measureText(message).width;
+      ctx.restore();
+
+      for (let x = startX; x < endX; x += wordWidth + 3) {
+        points.push({
+          x, y: yy,
+          text: message,
+          delay: points.length * 0.045
+        });
+      }
+    }
+  }
+
+  // Tiny stars around the heart.
+  particles = Array.from({length: 65}, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    r: Math.random() * 1.7 + 0.3,
+    phase: Math.random() * Math.PI * 2
+  }));
+}
+
+function draw(now = 0) {
+  ctx.clearRect(0, 0, W, H);
+
+  // Twinkling stars
+  for (const p of particles) {
+    const alpha = 0.25 + 0.55 *
+      (0.5 + 0.5 * Math.sin(now * 0.0015 + p.phase));
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,210,237,${alpha})`;
+    ctx.fill();
+  }
+
+  const total = points.length;
+  const visible = Math.min(total, Math.floor(progress));
+
+  // Draw words progressively, making the heart appear to be written.
+  ctx.save();
+  ctx.font = `bold ${fontSize}px Georgia`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  ctx.shadowColor = "#ff4b9b";
+  ctx.shadowBlur = finished ? 15 + 8 * Math.sin(now * 0.004) : 7;
+
+  for (let i = 0; i < visible; i++) {
+    const p = points[i];
+    const shimmer = 0.75 + 0.25 *
+      Math.sin(now * 0.003 + i * 0.3);
+
+    ctx.fillStyle = `rgba(255,${150 + Math.floor(50*shimmer)},${205 + Math.floor(40*shimmer)},0.95)`;
+    ctx.fillText(p.text, p.x, p.y);
+  }
+
+  ctx.restore();
+
+  if (finished) {
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.shadowColor = "#ff69ae";
+    ctx.shadowBlur = 25;
+    ctx.fillStyle = "#fff0f7";
+    ctx.font = "italic 19px Georgia";
+    ctx.fillText("You are special, Rinku ❤️", W/2, H - 14);
+    ctx.restore();
+  }
+}
+
+function animate(now) {
+  if (!lastTime) lastTime = now;
+  const dt = Math.min(now - lastTime, 50);
+  lastTime = now;
+
+  if (!finished) {
+    progress += dt * 0.018;
+
+    if (progress >= points.length) {
+      progress = points.length;
+      finished = true;
+    }
+  }
+
+  draw(now);
+  requestAnimationFrame(animate);
+}
+
+function restart() {
+  progress = 0;
+  finished = false;
+  lastTime = 0;
+}
+
+replay.addEventListener("click", restart);
+window.addEventListener("resize", resize);
+
+resize();
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
